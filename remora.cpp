@@ -18,6 +18,7 @@
 */
 
 #include "remora.h"
+#include "modules/comms/commsHandler.h"
 #include "../irqHandlers.h"
 #include "interrupt/interrupt.h"
 #include "json/jsonConfigHandler.h"
