@@ -11,7 +11,6 @@
 #include "remoraStatus.h"
 #include "comms/commsInterface.h"
 #include "modules/moduleFactory.h"
-#include "modules/moduleList.h"
 #include "thread/pruThread.h"
 
 #define MAJOR_VERSION 	2

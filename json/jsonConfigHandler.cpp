@@ -125,40 +125,6 @@ uint8_t JsonConfigHandler::readConfigFromSD() {
 	return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::NO_ERROR);
 }
 
-uint8_t JsonConfigHandler::readConfigFromFlash() {
-    uint32_t jsonLength;
-
-    printf("\nLoading JSON configuration file from Flash memory\n");
-
-    // read byte 0 to determine length to read
-    jsonLength = *(uint32_t*)(Platform_Config::JSON_storage_start_address);
-
-    if (jsonLength == 0xFFFFFFFF)
-    {
-    	printf("Flash storage location is empty - no config file\n");
-    	printf("Loading default configuration\n\n");
-
-		for (uint32_t i = 0; i < sizeof(Config::defaultConfig); i++)
-		{
-			jsonContent.push_back(Config::defaultConfig[i]);
-		}
-        return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::CONFIG_LOADED_DEFAULT);
-    }
-    else
-    {
-        jsonContent.reserve(jsonLength);
-
-		for (uint32_t i = 0; i < jsonLength; i++)
-		{
-            uint32_t json_config_addr = Platform_Config::JSON_storage_start_address + sizeof(json_metadata_t::jsonLength) + i;
-            jsonContent[i] = *reinterpret_cast<uint8_t*>(json_config_addr);
-		}
-    }
-
-	//printf("JSON Content: \n%s\n\n", jsonContent.c_str());
-    return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::NO_ERROR);
-}
-
 uint8_t JsonConfigHandler::parseJson() {
 	
 	printf("\nParsing JSON configuration file\n");
@@ -192,6 +158,42 @@ uint8_t JsonConfigHandler::parseJson() {
             return makeRemoraStatus(RemoraErrorSource::JSON_CONFIG, RemoraErrorCode::CONFIG_PARSE_FAILED, true);
     }
 
+    return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::NO_ERROR);
+}
+
+
+#ifdef ETH_CTRL
+uint8_t JsonConfigHandler::readConfigFromFlash() {
+    uint32_t jsonLength;
+
+    printf("\nLoading JSON configuration file from Flash memory\n");
+
+    // read byte 0 to determine length to read
+    jsonLength = *(uint32_t*)(Platform_Config::JSON_storage_start_address);
+
+    if (jsonLength == 0xFFFFFFFF)
+    {
+    	printf("Flash storage location is empty - no config file\n");
+    	printf("Loading default configuration\n\n");
+
+		for (uint32_t i = 0; i < sizeof(Config::defaultConfig); i++)
+		{
+			jsonContent.push_back(Config::defaultConfig[i]);
+		}
+        return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::CONFIG_LOADED_DEFAULT);
+    }
+    else
+    {
+        jsonContent.reserve(jsonLength);
+
+		for (uint32_t i = 0; i < jsonLength; i++)
+		{
+            uint32_t json_config_addr = Platform_Config::JSON_storage_start_address + sizeof(json_metadata_t::jsonLength) + i;
+            jsonContent[i] = *reinterpret_cast<uint8_t*>(json_config_addr);
+		}
+    }
+
+	//printf("JSON Content: \n%s\n\n", jsonContent.c_str());
     return makeRemoraStatus(RemoraErrorSource::NO_ERROR, RemoraErrorCode::NO_ERROR);
 }
 
@@ -246,7 +248,6 @@ int8_t JsonConfigHandler::json_check_length_and_CRC(void)
 	return 1;
 }
 
-#ifdef ETH_CTRL
 void JsonConfigHandler::store_json_in_flash(void)
 {
 	uint32_t i = 0;
